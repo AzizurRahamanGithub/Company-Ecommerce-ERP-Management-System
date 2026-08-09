@@ -1,0 +1,111 @@
+/* Horizontal scroll for product list */
+#changelist {
+    overflow-x: auto;
+}
+
+#changelist .results {
+    overflow-x: auto;
+    width: 100%;
+}
+
+#changelist table {
+    min-width: 2000px; /* Adjust based on your columns */
+}
+
+/* Sticky first column (optional) */
+#changelist table thead th:first-child,
+#changelist table tbody td:first-child {
+    position: sticky;
+    left: 0;
+    /* background: white; */
+    z-index: 10;
+}
+
+#changelist table thead th:nth-child(2),
+#changelist table tbody td:nth-child(2) {
+    position: sticky;
+    left: 50px; /* Adjust based on first column width */
+    /* background: white; */
+    z-index: 10;
+}
+
+/* Scrollbar styling - BLUE COLOR (All possible selectors) */
+body::-webkit-scrollbar,
+html::-webkit-scrollbar,
+#changelist::-webkit-scrollbar,
+#changelist .results::-webkit-scrollbar,
+.change-list::-webkit-scrollbar,
+#content::-webkit-scrollbar {
+    height: 12px !important;
+    width: 12px !important;
+}
+
+body::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track,
+#changelist::-webkit-scrollbar-track,
+#changelist .results::-webkit-scrollbar-track,
+.change-list::-webkit-scrollbar-track,
+#content::-webkit-scrollbar-track {
+    background: #f6f6f7 !important;
+    border-radius: 6px !important;
+}
+
+body::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb,
+#changelist::-webkit-scrollbar-thumb,
+#changelist .results::-webkit-scrollbar-thumb,
+.change-list::-webkit-scrollbar-thumb,
+#content::-webkit-scrollbar-thumb {
+    background: #2563eb !important;
+    border-radius: 6px !important;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover,
+#changelist::-webkit-scrollbar-thumb:hover,
+#changelist .results::-webkit-scrollbar-thumb:hover,
+.change-list::-webkit-scrollbar-thumb:hover,
+#content::-webkit-scrollbar-thumb:hover {
+    background: #1d4ed8 !important;
+}
+
+/* For Firefox */
+body,
+html,
+#changelist,
+#changelist .results,
+.change-list,
+#content {
+    scrollbar-width: thin !important;
+    scrollbar-color: #2563eb #f6f6f7 !important;
+}
+
+/* Additional styling from custom_admin.css */
+img {
+    transition: all 0.2s ease-in-out;
+}
+img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Input Fields */
+input, select, textarea {
+    border: 1.5px solid #727a86ff;
+    border-radius: 6px;
+    transition: all 0.25s ease-in-out;
+    padding: 8px 10px;
+    color: rgb(206, 215, 228);
+}
+
+/* Link inside row */
+table#result_list tbody tr th a {
+    color: #00B4FF;
+    font-weight: 500;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+table#result_list tbody tr th a:hover {
+    color: #009fe4;
+}

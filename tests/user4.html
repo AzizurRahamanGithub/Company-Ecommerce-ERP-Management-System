@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stripe Payment Form</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body {
+      font-family: 'Helvetica', sans-serif;
+      background: #f6f8fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .payment-form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .tab {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      margin-right: 5px;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      border-bottom: none;
+      background: #fafafa;
+    }
+
+    .tab.active {
+      background: #6772e5;
+      color: #fff;
+      border-color: #6772e5;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    #card-element {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    button {
+      width: 100%;
+      background: #6772e5;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #5469d4;
+    }
+
+    #error-message {
+      color: red;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    #success-message {
+      color: green;
+      margin-top: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="payment-form">
+  <div class="tabs">
+    <div class="tab active">Card</div>
+    <div class="tab">iDEAL</div>
+    <div class="tab">Bancontact</div>
+  </div>
+
+  <div class="form-group">
+    <div id="card-element"></div>
+  </div>
+
+  <button id="pay-btn">Pay $24.90</button>
+
+  <div id="error-message"></div>
+  <div id="success-message"></div>
+</div>
+
+<script>
+  const stripe = Stripe("pk_test_51QZEaRCswZXaKM4ARthLO0sY7xHwqdxAV8tHRpXouzGhr8sFSwbM9ZfQUzKWljMSwdwXT3iltkoU1si2Ys114kp000bIO5hmxu");
+
+  const elements = stripe.elements();
+  const card = elements.create("card", {
+    style: {
+      base: {
+        fontSize: "16px",
+        color: "#32325d",
+        "::placeholder": { color: "#a0aec0" }
+      },
+      invalid: { color: "#fa755a" }
+    }
+  });
+
+  card.mount("#card-element");
+
+  const payButton = document.getElementById("pay-btn");
+  const errorMessage = document.getElementById("error-message");
+  const successMessage = document.getElementById("success-message");
+
+  payButton.addEventListener("click", async () => {
+    errorMessage.textContent = "";
+    successMessage.textContent = "";
+
+    const { paymentMethod, error } = await stripe.createPaymentMethod({
+      type: "card",
+      card: card,
+    });
+
+    if (error) {
+      errorMessage.textContent = error.message;
+    } else {
+      successMessage.textContent = "Payment Method ID created!";
+      console.log("Payment Method ID:", paymentMethod.id);
+
+      // Send this ID to your backend
+      fetch("/api/charge-payment/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_method_id: paymentMethod.id, amount: 2490 }) // cents
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success){
+          successMessage.textContent = "Payment completed!";
+        } else {
+          errorMessage.textContent = data.error || "Payment failed.";
+        }
+      })
+      .catch(() => { errorMessage.textContent = "Server error"; });
+    }
+  });
+
+  // Tab switching (just visual)
+  const tabs = document.querySelectorAll(".tab");
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+    });
+  });
+</script>
+
+</body>
+</html>

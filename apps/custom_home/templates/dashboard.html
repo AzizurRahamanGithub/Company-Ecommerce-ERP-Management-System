@@ -1,0 +1,769 @@
+{% extends "admin/index.html"%}
+{% load static %}
+
+{% block extrastyle %}
+<style>
+
+
+        /* --- GLOBAL STYLE --- */
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 1.5rem;
+            font-family: "Inter", sans-serif;
+            background-color: #0C141F; /* Background color */
+            color: #25AAE1; /* Font color */
+        }
+
+        /* --- HEADER (Logo + Title) --- */
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            color: #25AAE1;  /* Font color */
+            background: #0C141F; /* Background color */
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .dashboard-header img {
+            height: 42px;
+            width: auto;
+            border-radius: 10px;
+            object-fit: contain;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0EA5E9;
+            letter-spacing: -0.5px;
+        }
+
+        /* --- ALERT BANNER --- */
+        .alert-banner {
+            background: linear-gradient(135deg, #7f1d1d, #991b1b);
+            border-left: 4px solid #ef4444;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: #fecaca;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- CARDS --- */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            border-radius: 16px;
+            padding: 1.75rem 1.5rem;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+        }
+
+        .card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card p {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card h3, .card p, .card-icon, .card:hover, .chart-card h3 {
+            color: #25AAE1; /* Font color */
+        }
+
+        .card-orders, .card-deliveries, .card-products, .card-users {
+            background:  #101828; /* Background gradient with primary colors */
+        }
+
+        /* --- CHARTS SECTION --- */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: linear-gradient(145deg, #252d3d, #1e2430);
+            border-radius: 16px;
+            padding: 1.75rem 1.75rem 0 1.75rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .chart{
+            height:450px;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .chart-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-card h3::before {
+            content: "";
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #00B4FF, #0EA5E9);
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            margin-top: 1rem;
+            background: rgba(30, 36, 48, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+
+        /* --- TABLE SECTION --- */
+        .table-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* --- TABLES --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #1e2430;
+        }
+
+        table th, table td {
+            padding: 1rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            color: #cbd5e1;
+        }
+
+        table th {
+            background: linear-gradient(145deg, #252d3d, #1e2430);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+        }
+
+        table tbody tr {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        table tbody tr:nth-child(odd) {
+            background-color: rgba(30, 36, 48, 0.6);
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: rgba(26, 31, 42, 0.6);
+        }
+
+        table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(30, 36, 48, 0.8));
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* --- BUTTONS --- */
+        .btn-update, .btn-delete, .btn-info {
+            padding: 0.4rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #fff;
+            margin-right: 6px;
+            transition: all 0.2s ease;
+            display: inline-block;
+            border: none;
+        }
+
+        .btn-update { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .btn-update:hover { 
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4); 
+        }
+
+        .btn-delete { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-delete:hover { 
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); 
+        }
+
+        .btn-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        /* --- STATUS BADGES --- */
+        .status-badge {
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .status-completed, .status-delivered { 
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); 
+        }
+
+        .status-pending { 
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); 
+        }
+
+        .status-failed, .status-cancelled { 
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); 
+        }
+
+        .status-processing {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* --- PAGINATION --- */
+        .pagination {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination span {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            .table-row {
+                grid-template-columns: 1fr;
+            }
+            .chart-card {
+                overflow-x: auto;
+            }
+        }
+
+        /* --- LOADING STATE --- */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+
+</style>
+{%endblock%}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>Admin Dashboard Overview</h1>
+    </div>
+
+    <!-- Alert Banner -->
+    {% if alert_message %}
+    <div class="alert-banner">
+        {{ alert_message }}
+    </div>
+    {% endif %}
+
+    <!-- Dashboard Cards (KPIs) -->
+    <div class="dashboard-cards">
+        <div class="card card-orders" onclick="document.getElementById('recent-orders').scrollIntoView({behavior: 'smooth'});">
+            <h3>Today's Orders</h3>
+            <p>{{ todays_orders }}</p>
+        </div>
+        <div class="card card-deliveries">
+            <h3>Pending Deliveries</h3>
+            <p>{{ pending_deliveries }}</p>
+        </div>
+        <div class="card card-products">
+            <h3>Total Products</h3>
+            <p>{{ total_products }}</p>
+        </div>
+        <div class="card card-users">
+            <h3>Active Users</h3>
+            <p>{{ active_users }}</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="dashboard-cards">
+        <div class="card card-orders">
+            <h3>Total Orders</h3>
+            <p>{{ total_orders }}</p>
+        </div>
+        <div class="card card-users">
+            <h3>Total Users</h3>
+            <p>{{ total_users }}</p>
+        </div>
+        <div class="card card-deliveries">
+            <h3>Total Revenue</h3>
+            <p>${{ total_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="card card-products">
+            <h3>Products Sold</h3>
+            <p>{{ total_products_sold }}</p>
+        </div>
+    </div>
+
+    <!-- Charts Row: Daily Orders & Order Status -->
+    <div class="charts-row">
+        <!-- Daily Orders Overview (Last 7 Days) -->
+        <div class="chart-card chart">
+            <h3>Daily Orders Overview (Last 7 Days)</h3>
+            <div class="chart-container chart">
+                <canvas id="dailyOrdersChart"></canvas>
+            </div>
+        </div>
+
+         <!-- Top Products Chart -->
+        <div class="chart-card chart">
+            <h3>Top 5 Best Selling Products</h3>
+            <div class="chart-container chart">
+                <canvas id="productsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row: Unit Type Sales & Top Products -->
+    {% comment %} <div class="charts-row">
+        <!-- Sales by Unit Type Chart -->
+        <div class="chart-card">
+            <h3>Sales by Unit Type</h3>
+            <div class="chart-container">
+                <canvas id="unitTypeChart"></canvas>
+            </div>
+        </div>
+        <!-- Order Status Pie Chart -->
+        <div class="chart-card">
+            <h3>Order Status Distribution</h3>
+            <div class="chart-container">
+                <canvas id="orderStatusChart"></canvas>
+            </div>
+        </div>
+
+    </div> {% endcomment %}
+
+    <!-- Tables Section -->
+    <div class="table-section">
+        <div class="table-row">
+            <!-- Recent Orders -->
+            <div class="chart-card" id="recent-orders">
+                <h3>Recent Orders</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr onclick="window.location.href='{% url 'admin:order_order_change' order.id %}'">
+                            <td><strong>#{{ order.order_number }}</strong></td>
+                            <td>{{ order.user.get_full_name|default:order.user.email }}</td>
+                            <td>{{ order.ordered_date|date:"M d, Y" }}</td>
+                            <td><strong>${{ order.total_amount|floatformat:2 }}</strong></td>
+                            <td>
+                                <span class="status-badge status-{{ order.order_status|lower }}">
+                                    {{ order.get_order_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" style="text-align:center; font-style:italic; color:#64748b;">No recent orders</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Payments Table -->
+            <div class="chart-card">
+                <h3>Recent Payments</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments_table %}
+                        <tr onclick="window.location.href='{% url 'admin:order_paymenthistory_change' payment.id %}'">
+                            <td><strong>#{{ payment.order.order_number }}</strong></td>
+                            <td><strong>${{ payment.amount|floatformat:2 }}</strong></td>
+                            <td>{{ payment.get_payment_method_display }}</td>
+                            <td>
+                                <span class="status-badge status-{{ payment.payment_status|lower }}">
+                                    {{ payment.payment_status|title }}
+                                </span>
+                            </td>
+                            <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" style="text-align:center; font-style:italic; color:#64748b;">No payments</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Notifications Table -->
+        <div class="chart-card" id="notifications-table">
+            <h3>Recent Notifications</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Title</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notification in notifications_table %}
+                    <tr>
+                        <td>
+                            <span class="status-badge status-{{ notification.target_users }}">
+                                {{ notification.get_target_users_display }}
+                            </span>
+                        </td>
+                        <td><strong>{{ notification.notification_title|default:"No Title" }}</strong></td>
+                        <td>{{ notification.notification_message|truncatewords:10 }}</td>
+                        <td>
+                            <span class="status-badge status-{{ notification.status|lower }}">
+                                {{ notification.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ notification.created_at|date:"M d, Y H:i" }}</td>
+                        <td style="white-space: nowrap;">
+                            <a class="btn-update" href="{% url 'admin:notification_notification_change' notification.id %}">Edit</a>
+                            <a class="btn-delete" href="{% url 'admin:notification_notification_delete' notification.id %}">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" style="text-align:center; font-style:italic; color:#64748b;">No notifications</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            {% if notifications_table.has_other_pages %}
+            <div class="pagination">
+                {% if notifications_table.has_previous %}
+                    <a class="btn-info" href="?page=1">First</a>
+                    <a class="btn-info" href="?page={{ notifications_table.previous_page_number }}">Previous</a>
+                {% endif %}
+                
+                <span>Page {{ notifications_table.number }} of {{ notifications_table.paginator.num_pages }}</span>
+                
+                {% if notifications_table.has_next %}
+                    <a class="btn-info" href="?page={{ notifications_table.next_page_number }}">Next</a>
+                    <a class="btn-info" href="?page={{ notifications_table.paginator.num_pages }}">Last</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { 
+                        color: '#B8C6D0',
+                        font: { size: 12, weight: '600' }
+                    }
+                }
+            }
+        };
+
+        // Daily Orders Chart (Bar)
+        const dailyCtx = document.getElementById('dailyOrdersChart');
+        if (dailyCtx) {
+            new Chart(dailyCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ daily_labels|safe }},
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: {{ daily_completed|safe }},
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'Pending',
+                            data: {{ daily_pending|safe }},
+                            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 11 }
+                            },
+                            grid: { color: '#1e293b' }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 11 }
+                            },
+                            grid: { color: '#1e293b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Order Status Pie Chart
+        const statusCtx = document.getElementById('orderStatusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ pie_labels|safe }},
+                    datasets: [{
+                        label: 'Orders',
+                        data: {{ pie_values|safe }},
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.8)',  // Pending - Orange
+                            'rgba(16, 185, 129, 0.8)',  // Delivered - Green
+                            'rgba(59, 130, 246, 0.8)',  // Completed - Blue
+                            'rgba(239, 68, 68, 0.8)'    // Cancelled - Red
+                        ],
+                        borderColor: [
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { 
+                                color: '#B8C6D0',
+                                padding: 15,
+                                font: { size: 12, weight: '600' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sales by Unit Type Chart
+        const unitTypeCtx = document.getElementById('unitTypeChart');
+        if (unitTypeCtx) {
+            new Chart(unitTypeCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ chart_labels|safe }},
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: {{ chart_values|safe }},
+                        backgroundColor: 'rgba(14, 165, 233, 0.8)',
+                        borderColor: 'rgba(14, 165, 233, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 11 }
+                            },
+                            grid: { color: '#1e293b' }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 11 }
+                            },
+                            grid: { color: '#1e293b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Top Products Chart
+        const productsCtx = document.getElementById('productsChart');
+        if (productsCtx) {
+            new Chart(productsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ top_labels|safe }},
+                    datasets: [{
+                        label: 'Quantity',
+                        data: {{ top_values|safe }},
+                        backgroundColor: [
+                            'rgba(14, 165, 233, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(14, 165, 233, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(139, 92, 246, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { 
+                                color: '#B8C6D0',
+                                padding: 12,
+                                font: { size: 11, weight: '600' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

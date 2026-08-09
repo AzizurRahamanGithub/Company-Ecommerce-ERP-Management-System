@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: django_db_omkars
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - django_net
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: django_redis_omkars
+    networks:
+      - django_net
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_web_omkars
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8001 --workers 3 --timeout 180"
+    volumes:
+      - .:/app
+      - static_volume:/app/config/staticfiles
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - django_net
+    restart: unless-stopped
+
+  websocket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_websocket_omkars
+    command: >
+      sh -c "daphne -b 0.0.0.0 -p 8002 config.asgi:application"
+    volumes:
+      - .:/app
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - django_net
+    restart: unless-stopped
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_celery_omkars
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+    networks:
+      - django_net
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_celery_beat_omkars
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+    networks:
+      - django_net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:
+
+networks:
+  django_net:
+    driver: bridge
+
+
